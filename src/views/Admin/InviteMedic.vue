@@ -8,18 +8,16 @@
             <i class="fas fa-arrow-left"></i> Back to Medic Management
           </button>
         </div>
-        
         <div class="invite-container">
           <div class="form-section">
             <h2 class="section-title">Medic Information</h2>
             <p class="section-description">
-              Enter the details of the medic you'd like to invite to join the platform.
+              Enter the details of the medic you'd like to invite.
             </p>
-            
             <form @submit.prevent="submitInvitation" class="invite-form">
               <div class="form-row">
                 <div class="form-group">
-                  <label for="firstName">First Name *</label>
+                  <label for="firstName">Invitee First Name *</label>
                   <input 
                     id="firstName"
                     v-model="form.firstName"
@@ -30,9 +28,8 @@
                   />
                   <p v-if="errors.firstName" class="error-message">{{ errors.firstName }}</p>
                 </div>
-                
                 <div class="form-group">
-                  <label for="lastName">Last Name *</label>
+                  <label for="lastName">Invitee Last Name *</label>
                   <input 
                     id="lastName"
                     v-model="form.lastName"
@@ -44,7 +41,6 @@
                   <p v-if="errors.lastName" class="error-message">{{ errors.lastName }}</p>
                 </div>
               </div>
-              
               <div class="form-group">
                 <label for="email">Email Address *</label>
                 <input 
@@ -57,7 +53,6 @@
                 />
                 <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
               </div>
-              
               <div class="form-group">
                 <label for="specialization">Specialization</label>
                 <select 
@@ -76,7 +71,6 @@
                   <option value="other">Other</option>
                 </select>
               </div>
-              
               <div v-if="form.specialization === 'other'" class="form-group">
                 <label for="otherSpecialization">Please Specify</label>
                 <input 
@@ -86,67 +80,21 @@
                   class="form-input"
                 />
               </div>
-              
               <div class="form-group">
-                <label for="message">Personalized Message (Optional)</label>
+                <label for="personalMessage">Personalized Message (Optional)</label>
                 <textarea 
-                  id="message"
-                  v-model="form.message"
+                  id="personalMessage"
+                  v-model="form.personalMessage"
                   class="form-textarea"
-                  placeholder="Add a personal message to your invitation..."
+                  placeholder="Add a personal message..."
                   rows="4"
                 ></textarea>
               </div>
-              
-              <div class="permissions-section">
-                <h3 class="subsection-title">Permissions</h3>
-                <p class="subsection-description">
-                  Select the permissions this medic will have in the system.
-                </p>
-                
-                <div class="permissions-checkboxes">
-                  <div class="checkbox-group">
-                    <input 
-                      id="managePatients"
-                      v-model="form.permissions.managePatients"
-                      type="checkbox"
-                    />
-                    <label for="managePatients">Manage Patients</label>
-                  </div>
-                  
-                  <div class="checkbox-group">
-                    <input 
-                      id="manageAppointments"
-                      v-model="form.permissions.manageAppointments"
-                      type="checkbox"
-                    />
-                    <label for="manageAppointments">Manage Appointments</label>
-                  </div>
-                  
-                  <div class="checkbox-group">
-                    <input 
-                      id="viewReports"
-                      v-model="form.permissions.viewReports"
-                      type="checkbox"
-                    />
-                    <label for="viewReports">View Reports</label>
-                  </div>
-                </div>
-              </div>
-              
               <div class="form-actions">
-                <button 
-                  type="button" 
-                  class="cancel-button"
-                  @click="navigateBack"
-                >
+                <button type="button" class="cancel-button" @click="navigateBack">
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  class="submit-button"
-                  :disabled="isSubmitting"
-                >
+                <button type="submit" class="submit-button" :disabled="isSubmitting">
                   <span v-if="isSubmitting">
                     <i class="fas fa-spinner fa-spin"></i> Sending Invitation...
                   </span>
@@ -157,7 +105,6 @@
               </div>
             </form>
           </div>
-          
           <div class="preview-section">
             <h2 class="section-title">Invitation Preview</h2>
             <div class="email-preview">
@@ -165,29 +112,22 @@
                 <img src="@/assets/logo.png" alt="Kineto Logo" class="email-logo" />
                 <h3 class="email-title">Invitation to Join Kineto</h3>
               </div>
-              
               <div class="email-body">
                 <p>Hello {{ form.firstName || 'Dr.' }},</p>
-                
                 <p>
-                  You've been invited to join Kineto, a comprehensive platform for physical
-                  therapy and rehabilitation management.
+                  You've been invited by the admin to join Kineto as a medic. Please use the following link to create your account.
                 </p>
-                
-                <p v-if="form.message">
+                <p v-if="form.personalMessage">
                   <strong>Message from the Admin:</strong><br>
-                  "{{ form.message }}"
+                  "{{ form.personalMessage }}"
                 </p>
-                
                 <div class="email-cta">
                   <button class="cta-button" disabled>
                     Accept Invitation
                   </button>
                 </div>
-                
                 <p class="email-note">
-                  This invitation will expire in 7 days. If you have any questions,
-                  please contact the administrator.
+                  This invitation will expire in 7 days. If you have any questions, please contact the administrator.
                 </p>
               </div>
             </div>
@@ -201,6 +141,7 @@
   import { ref, reactive } from 'vue';
   import { useRouter } from 'vue-router';
   import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+  import AdminService from '@/services/admin.service';
   
   export default {
     name: 'InviteMedic',
@@ -211,53 +152,38 @@
       const router = useRouter();
       const isSubmitting = ref(false);
       const errors = reactive({});
-  
-      // Form state
       const form = reactive({
+        email: '',
         firstName: '',
         lastName: '',
-        email: '',
         specialization: '',
         otherSpecialization: '',
-        message: '',
-        permissions: {
-          managePatients: true,
-          manageAppointments: true,
-          viewReports: false
-        }
+        personalMessage: ''
       });
   
       const validateForm = () => {
-        errors.firstName = !form.firstName.trim() ? 'First name is required' : null;
-        errors.lastName = !form.lastName.trim() ? 'Last name is required' : null;
-        
-        // Email validation
+        errors.firstName = (!form.firstName || form.firstName.trim() === '') ? 'First name is required' : null;
+        errors.lastName = (!form.lastName || form.lastName.trim() === '') ? 'Last name is required' : null;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!form.email.trim()) {
+        if (!form.email || form.email.trim() === '') {
           errors.email = 'Email is required';
         } else if (!emailRegex.test(form.email)) {
           errors.email = 'Please enter a valid email address';
         } else {
           errors.email = null;
         }
-  
-        // Check if there are any errors
-        return !Object.values(errors).some(error => error !== null);
+        return !errors.firstName && !errors.lastName && !errors.email;
       };
   
       const submitInvitation = async () => {
         if (!validateForm()) {
           return;
         }
-  
         isSubmitting.value = true;
-  
         try {
-          // Real implementation: call your API to send the invitation
-          await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API
-  
-          alert('Invitation sent successfully!');
-          navigateBack();
+          const response = await AdminService.sendMedicInvitation(form);
+          alert(response.data.message || 'Invitation sent successfully!');
+          router.push('/admin/medics');
         } catch (error) {
           console.error('Failed to send invitation:', error);
           alert('Failed to send invitation. Please try again.');
@@ -280,7 +206,7 @@
     }
   };
   </script>
-  
+    
   <style scoped>
   .invite-medic-page {
     height: 100%;

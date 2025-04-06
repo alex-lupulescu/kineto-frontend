@@ -14,7 +14,12 @@ export default {
     return ApiService.post(`/auth/signup/invitation/${token}`, userData);
   },
 
+  registerMedicWithInvitation(medicData, token) {
+    return ApiService.post(`/auth/signup/medic/invitation/${token}`, medicData);
+  },
+
   getCurrentUserProfile() {
     return ApiService.get('/user/profile');
   }
 };
+

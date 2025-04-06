@@ -1,14 +1,20 @@
-// src/main.js
 import { createApp } from 'vue';
 import App from './App.vue';
-import router from './router';
 import store from './store';
-import ApiService from '@/services/api.service';
+import router from './router';
+import ApiService from './services/api.service';
 
-// Initialize the API
+// Initialize the API service with your base URL
 ApiService.init(process.env.VUE_APP_API_URL || 'http://localhost:8081/api');
 
-createApp(App)
-  .use(store)
-  .use(router)
-  .mount('#app');
+const app = createApp(App);
+
+app.use(store);
+app.use(router);
+
+// If a token exists, fetch the current user profile
+if (localStorage.getItem('token')) {
+  store.dispatch('auth/fetchCurrentUser');
+}
+
+app.mount('#app');

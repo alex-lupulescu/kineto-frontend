@@ -38,5 +38,9 @@ export default {
 
   togglePackageStatus(packageId) {
     return ApiService.put(`/admin/package/${packageId}/status`);
+  },
+
+  sendMedicInvitation(invitationData) {
+    return ApiService.post('/admin/invitations', invitationData);
   }
 };

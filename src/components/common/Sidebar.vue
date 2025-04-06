@@ -37,6 +37,10 @@
           <router-link to="/medic/invite" class="sidebar-link">
             <i class="fas fa-envelope"></i> Invite User
           </router-link>
+          <!-- Add this link inside the medic-specific navigation -->
+            <router-link to="/medic/calendar" class="sidebar-link">
+            <i class="fas fa-calendar-alt"></i> Calendar
+            </router-link>
         </div>
   
         <!-- User Links -->

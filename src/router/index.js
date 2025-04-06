@@ -17,6 +17,9 @@ import MedicDashboard from '@/views/Medic/Dashboard.vue';
 import Patients from '@/views/Medic/Patients.vue';
 import Schedule from '@/views/Medic/Schedule.vue';
 import InviteUser from '@/views/Medic/InviteUser.vue';
+import RegisterMedicWithInvitation from '@/views/Auth/RegisterMedicWithInvitation.vue';
+import MedicCalendar from '@/views/Medic/MedicCalendar.vue';
+
 
 // User
 import UserDashboard from '@/views/User/Dashboard.vue';
@@ -107,6 +110,18 @@ const routes = [
     component: Profile,
     meta: { requiresAuth: true, role: 'USER' }
   },
+  {
+    path: '/register/medic/invitation/:token',
+    name: 'RegisterMedicWithInvitation',
+    component: RegisterMedicWithInvitation,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/medic/calendar',
+    name: 'MedicCalendar',
+    component: MedicCalendar,
+    meta: { requiresAuth: true, role: 'MEDIC' }
+  },
 
   { path: '/:pathMatch(.*)*', redirect: '/login' }
 ];
@@ -117,30 +132,42 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const userIsAuth = store.getters['auth/isAuthenticated'];
-  const userRole = store.state.auth.user ? store.state.auth.user.role : null;
-
-  if (requiresAuth && !userIsAuth) {
-    // not logged in
-    return next('/login');
-  }
-
-  if (to.meta.role && to.meta.role !== userRole) {
-    // wrong role -> redirect to your role-based dashboard
-    switch (userRole) {
-      case 'ADMIN':
-        return next('/admin/dashboard');
-      case 'MEDIC':
-        return next('/medic/dashboard');
-      case 'USER':
-        return next('/user/dashboard');
-      default:
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const isAuthenticated = store.getters['auth/isAuthenticated'];
+    const user = store.state.auth.user;
+  
+    // If a token exists but user is not loaded, fetch the profile first.
+    if (isAuthenticated && !user) {
+      try {
+        await store.dispatch('auth/fetchCurrentUser');
+      } catch (error) {
+        // If fetching the user fails (e.g., invalid token), clear token and redirect
+        store.dispatch('auth/logout');
         return next('/login');
+      }
     }
-  }
-
-  next();
-});
+  
+    // Now check authentication again
+    if (requiresAuth && !store.getters['auth/isAuthenticated']) {
+      return next('/login');
+    }
+  
+    // If the route has a role restriction, check the user's role
+    if (to.meta.role && to.meta.role !== store.state.auth.user?.role) {
+      // Redirect to the appropriate dashboard based on user role
+      switch (store.state.auth.user?.role) {
+        case 'ADMIN':
+          return next('/admin/dashboard');
+        case 'MEDIC':
+          return next('/medic/dashboard');
+        case 'USER':
+          return next('/user/dashboard');
+        default:
+          return next('/login');
+      }
+    }
+  
+    next();
+  });
 
 export default router;

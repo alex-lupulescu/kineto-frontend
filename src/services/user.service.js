@@ -32,5 +32,9 @@ export default {
 
   cancelAppointment(data) {
     return ApiService.put('/user/appointment/cancel', data);
+  },
+
+  getDashboard() {
+    return ApiService.get('/user/dashboard');
   }
 };

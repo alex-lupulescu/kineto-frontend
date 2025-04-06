@@ -47,10 +47,7 @@ export default {
         const response = await AuthService.login(credentials);
         const token = response.data.accessToken || response.data.token;
         commit('SET_TOKEN', token);
-
-        // In a real backend, you might fetch the user profile after login:
-        // e.g., commit('SET_USER', userProfileFromBackend);
-
+        // Optionally fetch user profile here...
         return true;
       } catch (err) {
         commit('SET_ERROR', err.response?.data?.message || 'Authentication failed');
@@ -74,20 +71,34 @@ export default {
       }
     },
 
+    async registerMedicWithInvitation({ commit }, { userData, token }) {
+      commit('SET_LOADING', true);
+      commit('SET_ERROR', null);
+      try {
+        // Call the backend endpoint for medic registration with invitation.
+        // This endpoint should be: POST /api/auth/signup/medic/invitation/{token}
+        await AuthService.registerMedicWithInvitation(userData, token);
+        return true;
+      } catch (err) {
+        commit('SET_ERROR', err.response?.data?.message || 'Registration failed');
+        return false;
+      } finally {
+        commit('SET_LOADING', false);
+      }
+    },
+
     logout({ commit }) {
       commit('SET_TOKEN', null);
       commit('SET_USER', null);
     },
 
-    // Example: fetch the current user profile after login
     async fetchCurrentUser({ commit, state }) {
-      if (!state.token) return; // no token, skip
+      if (!state.token) return;
       commit('SET_LOADING', true);
       try {
         const response = await AuthService.getCurrentUserProfile();
         commit('SET_USER', response.data);
       } catch (err) {
-        // If token is invalid or user not found
         commit('SET_TOKEN', null);
         commit('SET_USER', null);
       } finally {

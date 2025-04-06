@@ -2,7 +2,11 @@
     <AuthenticatedLayout>
       <div class="user-dashboard">
         <h1 class="page-title">User Dashboard</h1>
-        <p>Welcome to your personal dashboard, {{ currentUser.email }}</p>
+        <p>Welcome to your personal dashboard, 
+            <span v-if="currentUser">
+          {{ currentUser.firstName }} {{ currentUser.lastName }}
+        </span>
+        </p>
       </div>
     </AuthenticatedLayout>
   </template>
